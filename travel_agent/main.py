@@ -90,12 +90,13 @@ def load_config() -> dict:
     }
 
 
-def _get_api_keys() -> tuple[str | None, str | None, str | None]:
+def _get_api_keys() -> tuple[str | None, str | None, str | None, str]:
     """Get API keys and configuration from environment."""
     openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
     mem0_api_key = os.getenv("MEM0_API_KEY")
     exa_api_key = os.getenv("EXA_API_KEY")
-    return openrouter_api_key, mem0_api_key, exa_api_key
+    model_name = os.getenv("MODEL_NAME", "openai/gpt-4o")
+    return openrouter_api_key, mem0_api_key, exa_api_key, model_name
 
 
 def _create_llm_model(openrouter_api_key: str, model_name: str) -> OpenRouter:
