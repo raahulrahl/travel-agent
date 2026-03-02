@@ -17,12 +17,13 @@ for Airbnb and Google Maps integration.
 import argparse
 import asyncio
 import json
+import logging
 import os
 import sys
 import traceback
 from pathlib import Path
 from textwrap import dedent
-from typing import Any
+from typing import Any, cast
 
 from agno.agent import Agent
 from agno.models.openrouter import OpenRouter
@@ -39,6 +40,7 @@ load_dotenv()
 agent: Agent | None = None
 _initialized = False
 _init_lock = asyncio.Lock()
+_logger = logging.getLogger(__name__)
 
 
 class APIKeyError(ValueError):
@@ -47,20 +49,14 @@ class APIKeyError(ValueError):
 
 def load_config() -> dict:
     """Load agent configuration from project root."""
-    possible_paths = [
-        Path(__file__).parent.parent / "agent_config.json",  # Project root
-        Path(__file__).parent / "agent_config.json",  # Same directory
-        Path.cwd() / "agent_config.json",  # Current working directory
-    ]
+    config_path = Path(__file__).parent / "agent_config.json"
 
-    for config_path in possible_paths:
-        if config_path.exists():
-            try:
-                with open(config_path) as f:
-                    return json.load(f)
-            except Exception as e:
-                print(f"⚠️  Error reading {config_path}: {e}")
-                continue
+    if config_path.exists():
+        try:
+            with open(config_path) as f:
+                return cast(dict[str, Any], json.load(f))
+        except (OSError, json.JSONDecodeError) as exc:
+            _logger.warning("Failed to load config from %s", config_path, exc_info=exc)
 
     # Default configuration
     return {
